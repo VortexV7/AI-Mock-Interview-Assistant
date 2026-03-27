@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Interview Assistant</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="title-bar">
+        <div class="control-btn" id="btn-min"></div>
+        <div class="control-btn" id="btn-max"></div>
+        <div class="control-btn" id="btn-close"></div>
+    </div>
+
+    <div id="setup-view" class="view-section" style="display:none;">
+        <div class="setup-card">
+            <div class="setup-logo">🤖</div>
+            <h2>First-Time Setup</h2>
+            <p class="setup-desc">
+                AI Mock Interview uses <strong>Groq Whisper</strong> for speech recognition.<br>
+                A free API key is required to use the app.
+            </p>
+
+            <div class="setup-steps">
+                <div class="setup-step">
+                    <span class="step-num">1</span>
+                    <span>Go to <strong>console.groq.com</strong> and create a free account</span>
+                </div>
+                <div class="setup-step">
+                    <span class="step-num">2</span>
+                    <span>Click <strong>API Keys</strong> in the sidebar → Create Key</span>
+                </div>
+                <div class="setup-step">
+                    <span class="step-num">3</span>
+                    <span>Paste your key below — it's stored only on your device</span>
+                </div>
+            </div>
+
+            <input type="password" id="api-key-input" class="login-input"
+                placeholder="gsk_••••••••••••••••••••••••••••••••"
+                oninput="clearSetupWarning()" />
+            <p id="setup-warning" class="login-warning" style="display:none;"></p>
+
+            <button class="btn-primary" style="width:100%;" onclick="saveApiKey()">
+                Save Key &amp; Continue →
+            </button>
+
+            <p class="setup-note">
+                Your key is saved to <code>%AppData%\AI Mock Interview Assistant\config.json</code><br>
+                and is never included in any installer or shared file.
+            </p>
+        </div>
+    </div>
+
+    <div id="splash-view" class="view-section">
+        <h1 style="font-size: 36px; font-weight: 700; color: white; letter-spacing: -1px;">AI <span style="color: var(--primary-color)">INTERVIEWER</span></h1>
+        <p style="color: var(--text-muted); margin-top: 10px; font-size: 14px;">Loading Engine...</p>
+        <p class="splash-credit">Developed by <span>Ved Sharanagate</span></p>
+    </div>
+
+    <div id="login-view" class="view-section">
+        <div class="login-card">
+            <h2 style="margin: 0 0 10px 0;">Welcome Back</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Please sign in to continue</p>
+            <input type="text" id="login_name" class="login-input" placeholder="Enter Full Name" oninput="clearLoginWarning()" onkeydown="handleLoginKey(event)">
+            <p id="login-warning" class="login-warning" style="display: none;">Please enter your name to access the dashboard.</p>
+            <button class="btn-primary" onclick="performLogin()" style="padding: 14px;">Access Dashboard</button>
+        </div>
+    </div>
+
+    <div id="dashboard-view" class="view-section" style="display: none; align-items: flex-start;">
+        <div class="dashboard-container">
+            
+            <div class="dash-header">
+                <div>
+                    <h2 id="disp_name" style="margin: 0; font-size: 24px;">User</h2>
+                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Ready to Practice</span>
+                </div>
+                <button onclick="toggleSettings(true)" class="gear-btn"><i class="fa-solid fa-gear"></i></button>
+            </div>
+
+            <div class="dash-content">
+                
+                <div class="left-panel">
+                    <div class="preview-box">
+                        <div class="hw-status">
+                            <div class="status-dot" id="cam-dot"></div> <span id="cam-txt">Camera Off</span>
+                        </div>
+                        <video id="dash-cam" autoplay playsinline muted></video>
+                    </div>
+                    
+                    <div class="audio-meter"><div class="audio-bar" id="audio-bar"></div></div>
+
+                    <div class="toggle-panel">
+                        <div class="toggle-row">
+                            <span>Camera</span>
+                            <label class="switch"><input type="checkbox" id="cam-switch" onchange="toggleCamera(this)"><span class="slider"></span></label>
+                        </div>
+                        <div class="toggle-row">
+                            <span>Microphone</span>
+                            <label class="switch"><input type="checkbox" id="mic-switch" onchange="toggleMic(this)"><span class="slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-panel">
+
+                    <!-- Tab bar -->
+                    <div class="rp-tabbar">
+                        <button class="rp-tab active" id="tab-btn-configure" onclick="switchRpTab('configure')">Configure</button>
+                        <button class="rp-tab" id="tab-btn-study" onclick="switchRpTab('study')">Study Resources</button>
+                        <span class="selected-badge" id="selected-count"></span>
+                    </div>
+
+                    <!-- CONFIGURE TAB -->
+                    <div class="rp-tab-content" id="rp-configure">
+                        <div class="cat-tabs" id="cat-tabs">
+                            <button class="cat-tab active" onclick="setCategoryTab(this,'All')">All</button>
+                            <button class="cat-tab" onclick="setCategoryTab(this,'Languages')">Languages</button>
+                            <button class="cat-tab" onclick="setCategoryTab(this,'CS Core')">CS Core</button>
+                            <button class="cat-tab" onclick="setCategoryTab(this,'Frameworks')">Frameworks</button>
+                            <button class="cat-tab" onclick="setCategoryTab(this,'Soft Skills')">Soft Skills</button>
+                        </div>
+                        <div class="topic-list-grid" id="topic-chips-grid"></div>
+                        <div class="config-footer">
+                            <div class="config-sliders">
+                                <div class="slider-container">
+                                    <label><span>DIFFICULTY</span><span id="diff-lbl">Intermediate</span></label>
+                                    <input type="range" min="1" max="3" value="2" id="diff-range" oninput="updateDiff(this)">
+                                </div>
+                                <div class="slider-container">
+                                    <label><span>DURATION</span><span id="time-lbl">20 Mins</span></label>
+                                    <input type="range" min="10" max="60" step="10" value="20" oninput="document.getElementById('time-lbl').innerText = this.value + ' Mins'">
+                                </div>
+                            </div>
+                            <button id="btn-start" class="btn-primary" disabled onclick="alert('Starting Interview Module...')">START SESSION</button>
+                        </div>
+                    </div>
+
+                    <!-- STUDY TAB -->
+                    <div class="rp-tab-content hidden" id="rp-study">
+                        <div id="study-empty-state" class="study-empty">
+                            <i class="fa-solid fa-book-open" style="font-size:28px; color:var(--grey-300); margin-bottom:6px;"></i>
+                            <p>Select topics in <b>Configure</b> to see curated resources.</p>
+                        </div>
+                        <div id="study-cards-container" style="display:none;"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-box settings-modal-box">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <i class="fa-solid fa-xmark modal-close-btn" onclick="toggleSettings(false)"></i>
+            </div>
+            
+            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:8px; font-weight: 600;">CAMERA SOURCE</label>
+            <select id="cam-select" class="modal-select"></select>
+            
+            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:8px; font-weight: 600;">MICROPHONE SOURCE</label>
+            <select id="mic-select" class="modal-select"></select>
+
+            <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 20px 0;">
+
+            <!-- ABOUT DEVELOPER -->
+            <div class="about-dev">
+                <h3>About Developer</h3>
+
+                <p class="dev-name">Ved Sharanagate</p>
+                <p class="dev-role">AI & Full-Stack Developer</p>
+
+                <div class="dev-links">
+                    <a href="#" onclick="openExternal('https://github.com/VortexV7')">
+                        <i class="fa-brands fa-github"></i> GitHub
+                    </a>
+                    <a href="#" onclick="openExternal('https://www.linkedin.com/in/ved-sharanagate/')">
+                        <i class="fa-brands fa-linkedin"></i> LinkedIn
+                    </a>
+                    <a href="#" onclick="openExternal('mailto:vedsharanagate05@email.com')">
+                        <i class="fa-solid fa-envelope"></i> Email
+                    </a>
+                </div>
+
+                <p class="dev-note">
+                    AI Mock Interview Assistant<br>
+                    Privacy-Focused • Electron + Python
+                </p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 20px 0;">
+
+            <!-- TTS VOICE CONTROLS -->
+            <div class="tts-section">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                    <span style="font-size:12px; color:var(--text-muted); font-weight:700; font-family:var(--font-mono); letter-spacing:1px; text-transform:uppercase;">VOICE (TTS)</span>
+                    <label class="switch" style="transform:scale(0.85);">
+                        <input type="checkbox" id="tts-toggle" checked onchange="toggleTts(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px; font-weight:700; font-family:var(--font-mono); letter-spacing:1px; text-transform:uppercase;">VOICE</label>
+                <select id="tts-voice-select" class="modal-select" onchange="setTtsVoice(this)"></select>
+
+                <div style="display:flex; gap:16px; margin-top:4px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:8px; font-weight:700; font-family:var(--font-mono); letter-spacing:1px; text-transform:uppercase;">
+                            SPEED <span id="tts-speed-lbl" style="color:var(--blue);">1.0×</span>
+                        </label>
+                        <input type="range" min="0.5" max="2" step="0.1" value="1" id="tts-speed-range"
+                               oninput="setTtsSpeed(this)" style="width:100%; accent-color:var(--blue); cursor:pointer; height:5px;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:8px; font-weight:700; font-family:var(--font-mono); letter-spacing:1px; text-transform:uppercase;">
+                            PITCH <span id="tts-pitch-lbl" style="color:var(--blue);">Normal</span>
+                        </label>
+                        <input type="range" min="0.5" max="2" step="0.1" value="1" id="tts-pitch-range"
+                               oninput="setTtsPitch(this)" style="width:100%; accent-color:var(--blue); cursor:pointer; height:5px;">
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 20px 0;">
+
+            <button class="btn-logout" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+        </div>
+    </div>
+
+    <!-- SESSION LOADING OVERLAY -->
+        <div id="session-loader" class="modal-overlay">
+            <div class="session-loader-box">
+                <div class="loader-circle"></div>
+
+                <p id="loader-text" class="loader-text">
+                    Align your face straight with the camera 🙂
+                </p>
+
+                <label class="ready-check">
+                    <input type="checkbox" id="ready-check">
+                    I am ready to start the interview
+                </label>
+
+                <button class="btn-primary" id="btn-confirm-start" disabled>
+                    Start Session
+                </button>
+            </div>
+        </div>
+
+    <!-- CHEAT WARNING BANNER (injected inside session view at runtime) -->
+    <div id="cheat-warning" style="display:none;" class="cheat-banner">
+        <span id="cheat-warning-icon" class="cheat-banner-icon">⚠️</span>
+        <div class="cheat-banner-body">
+            <span class="cheat-banner-title">Focus Warning</span>
+            <span id="cheat-warning-msg" class="cheat-banner-msg">Please keep your gaze on the screen.</span>
+        </div>
+        <span id="cheat-warning-count" class="cheat-banner-count">1</span>
+        <button class="cheat-banner-dismiss" onclick="dismissCheatWarning()">Dismiss ×</button>
+    </div>
+
+    <!-- INTERVIEW SESSION VIEW -->
+    <div id="session-view" class="view-section">
+        <div class="session-container">
+
+            <!-- TOP BAR: brand + live badge -->
+            <div class="session-topbar">
+                <div class="session-topbar-left">
+                    <span class="session-brand">🤖 AI INTERVIEWER</span>
+                    <span class="session-status" id="session-status">⬤ LIVE</span>
+                </div>
+            </div>
+
+            <!-- MAIN AREA: transcript (left) + sidebar (right) -->
+            <div class="session-main">
+
+                <!-- LEFT — Transcript chat -->
+                <div class="transcript-chat" id="transcript-box">
+                    <div class="chat-bubble ai">Tell me about yourself.</div>
+                </div>
+
+                <!-- RIGHT — Sidebar: camera + timer + controls + mic meter -->
+                <div class="session-sidebar">
+
+                    <div class="session-camera-wrapper">
+                        <video id="session-cam" autoplay muted playsinline></video>
+                        <div class="session-timer-bar">
+                            <span class="session-timer" id="session-timer">00:00</span>
+                        </div>
+                    </div>
+
+                    <div class="session-controls" id="session-controls">
+                        <button class="btn-outline" id="btn-pause" onclick="pauseSession()">⏸ Pause</button>
+                        <button class="btn-danger" onclick="endSession()">⏹ End Session</button>
+                    </div>
+
+                    <div class="session-mic-meter">
+                        <span class="session-mic-label"><i class="fa-solid fa-microphone"></i> MIC</span>
+                        <div class="session-mic-bar-wrap"><div id="session-audio-bar" class="session-mic-bar"></div></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- END SESSION CONFIRMATION MODAL -->
+    <div id="end-confirm-modal" class="modal-overlay">
+        <div class="modal-box end-confirm-box">
+            <div class="end-confirm-icon">⏹</div>
+            <h2>End Interview Session?</h2>
+            <p class="end-confirm-desc">This will stop the interview and generate your performance report. This cannot be undone.</p>
+            <div class="end-confirm-actions">
+                <button class="btn-outline" onclick="cancelEndSession()">Keep Going</button>
+                <button class="btn-danger" onclick="confirmEndSession()">End Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global engine error toast (visible on any screen) -->
+    <div id="engine-toast" style="
+        display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+        background:#EA4335; color:#fff; font-family:monospace; font-size:12px; font-weight:700;
+        padding:10px 20px; border-radius:4px; z-index:99999;
+        box-shadow:4px 4px 0 rgba(0,0,0,0.3); max-width:480px; text-align:center;
+        letter-spacing:0.4px; line-height:1.5;
+    "></div>
+
+    <script src="renderer.js"></script>
+
+</body>
+</html>

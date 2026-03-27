@@ -1,0 +1,5 @@
+groq
+python-dotenv
+sounddevice
+numpy
+reportlab

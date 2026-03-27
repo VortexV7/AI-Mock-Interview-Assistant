@@ -1,0 +1,81 @@
+{
+  "name": "ai-mock-interview-assistant",
+  "version": "2.0.0",
+  "description": "AI-powered offline mock interview assistant with speech recognition and performance reports.",
+  "main": "main.js",
+  "author": {
+    "name": "Ved Sharanagate",
+    "email": "vedsharangate@gmail.com"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:dir": "electron-builder --win --dir"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "python-shell": "^5.0.0"
+  },
+  "build": {
+    "appId": "com.dvoid7.aimockinterview",
+    "productName": "AI Mock Interview Assistant",
+    "copyright": "Copyright © 2026 Ved Sharanagate",
+    "directories": {
+      "output": "dist-installer"
+    },
+    "files": [
+      "**/*",
+      "!.venv/**",
+      "!.env",
+      "!engine/**/*.py",
+      "!engine/**/*.spec",
+      "!engine/models/**",
+      "!engine/reports/**",
+      "!engine/user_data/**",
+      "!**/__pycache__/**",
+      "!*.log",
+      "!dist-installer/**",
+      "!assets/style.css.bak"
+    ],
+    "extraResources": [
+      {
+        "from": "engine/dist/engine/",
+        "to": "engine/",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "AI-Mock-Interview-Assistant-Setup-v${version}.exe",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AI Interview Assistant",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "license": "LICENSE.txt",
+      "installerLanguages": ["en-US"],
+      "menuCategory": "AI Tools",
+      "include": "build/installer.nsh",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

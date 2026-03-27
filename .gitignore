@@ -1,0 +1,30 @@
+# ── Secrets (NEVER commit these) ──
+.env
+*.env.*
+
+# ── Python ──
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+engine/dist/
+engine/build/
+engine/__pycache__/
+
+# ── Electron build output ──
+dist-installer/
+dist/
+
+# ── Node ──
+node_modules/
+
+# ── User data & reports (runtime only) ──
+engine/reports/
+engine/user_data/
+
+# ── Editor / OS ──
+.vscode/
+.idea/
+*.bak
+Thumbs.db
+.DS_Store
