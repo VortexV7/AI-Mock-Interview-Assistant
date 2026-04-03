@@ -278,9 +278,55 @@
             <!-- MAIN AREA: transcript (left) + sidebar (right) -->
             <div class="session-main">
 
-                <!-- LEFT — Transcript chat -->
-                <div class="transcript-chat" id="transcript-box">
-                    <div class="chat-bubble ai">Tell me about yourself.</div>
+                <!-- LEFT — Transcript + Code Editor column -->
+                <div class="transcript-column">
+
+                    <div class="transcript-chat" id="transcript-box">
+                        <div class="chat-bubble ai">Tell me about yourself.</div>
+                    </div>
+
+                    <!-- Code Editor Panel — only visible when AI asks a coding question -->
+                    <div id="code-editor-panel" class="code-editor-panel">
+
+                        <div class="code-editor-header">
+                            <span class="code-editor-badge"><i class="fa-solid fa-code"></i> CODE EDITOR</span>
+                            <span class="code-editor-divider"></span>
+                            <select id="code-lang-select" class="code-lang-select">
+                                <option>Python</option>
+                                <option>JavaScript</option>
+                                <option>Java</option>
+                                <option>C++</option>
+                                <option>C#</option>
+                                <option>TypeScript</option>
+                                <option>SQL</option>
+                                <option>Go</option>
+                                <option>Other</option>
+                            </select>
+                            <span class="code-timer-wrap">
+                                <i class="fa-regular fa-clock" style="font-size:10px;"></i>
+                                <span id="code-timer">00:00</span>
+                            </span>
+                        </div>
+
+                        <div class="code-editor-body">
+                            <div class="code-line-nums" id="code-line-nums">1</div>
+                            <textarea id="code-input" class="code-textarea"
+                                placeholder="# Write your solution here..."
+                                spellcheck="false" autocorrect="off" autocapitalize="off"
+                                autocomplete="off"></textarea>
+                        </div>
+
+                        <div class="code-editor-footer">
+                            <span class="code-editor-hint">
+                                <kbd>Tab</kbd> to indent &nbsp;·&nbsp; <kbd>Ctrl + Enter</kbd> to submit
+                            </span>
+                            <button id="code-submit-btn" onclick="submitCode()">
+                                <i class="fa-solid fa-paper-plane"></i>&nbsp; Submit Answer
+                            </button>
+                        </div>
+
+                    </div>
+
                 </div>
 
                 <!-- RIGHT — Sidebar: camera + timer + controls + mic meter -->

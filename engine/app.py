@@ -615,8 +615,26 @@ def handle_command(data):
 
     elif msg_type == "PAUSE_LISTENING":
         listening_active = False
+        # Also cancel any pending follow-up so the AI doesn't fire a new question
+        # while the user is writing code
+        if followup_timer:
+            followup_timer.cancel()
+            followup_timer = None
 
     elif msg_type == "RESUME_LISTENING":
+        listening_active = True
+
+    elif msg_type == "CODE_ANSWER":
+        # User submitted a code answer from the in-app editor.
+        # Treat it like a spoken transcript final: accumulate and generate follow-up.
+        code  = data.get("code", "").strip()
+        lang  = data.get("lang", "")
+        if code and session_active:
+            label  = f"[Code — {lang}]\n{code}" if lang else f"[Code]\n{code}"
+            # Echo back to renderer so the engine's own transcript pipeline records it
+            send({"type": "TRANSCRIPT_FINAL", "text": label})
+            on_transcript_final(label)
+        # Always resume microphone after the code editor closes
         listening_active = True
 
     elif msg_type == "STOP_LISTENING":

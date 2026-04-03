@@ -24,6 +24,115 @@ let sessionSeconds = 0;
 let sessionPaused = false;
 let sessionActive = false;   // true while an interview session is running
 
+// --- AUTO SCROLL STATE ---
+let autoScrollEnabled = true;   // false when user manually scrolls up
+
+// --- CODE EDITOR STATE ---
+let codeTimerInterval = null;
+let codeSeconds = 0;
+let awaitingCode = false;       // true while code editor is open
+
+const CODE_KEYWORDS = /\b(write|implement|code|function|program|snippet|algorithm|debug|fix|solution|class|method|script|recursive|recursion|loop|sort|search|binary|linked.?list|stack|queue|tree|graph|hash)\b/i;
+
+function isCodeQuestion(text) {
+    return CODE_KEYWORDS.test(text);
+}
+
+function showCodeEditor() {
+    if (awaitingCode) return;
+    awaitingCode = true;
+    codeSeconds = 0;
+
+    // Pause mic + cancel any pending followup timer in engine
+    ipcRenderer.send('ai-send', JSON.stringify({ type: "PAUSE_LISTENING" }));
+
+    // Set default language from session topics
+    const langMap = { python:'Python', java:'Java', javascript:'JavaScript',
+                      'c++':'C++', 'c#':'C#', sql:'SQL', typescript:'TypeScript',
+                      go:'Go', react:'JavaScript', 'node.js':'JavaScript' };
+    const langSel = document.getElementById('code-lang-select');
+    if (langSel && selected.length) {
+        const match = selected.map(s => s.toLowerCase()).find(s => langMap[s]);
+        if (match) langSel.value = langMap[match];
+    }
+
+    // Clear textarea and show panel
+    const input = document.getElementById('code-input');
+    const panel = document.getElementById('code-editor-panel');
+    if (input) { input.value = ''; updateLineNumbers(); }
+    if (panel) panel.style.display = 'flex';
+
+    // Start code timer
+    updateCodeTimer();
+    if (codeTimerInterval) clearInterval(codeTimerInterval);
+    codeTimerInterval = setInterval(() => { codeSeconds++; updateCodeTimer(); }, 1000);
+
+    autoScrollEnabled = true;
+    scrollToBottom();
+    setTimeout(() => { const inp = document.getElementById('code-input'); if (inp) inp.focus(); }, 80);
+}
+
+function hideCodeEditor() {
+    awaitingCode = false;
+    const panel = document.getElementById('code-editor-panel');
+    if (panel) panel.style.display = 'none';
+    if (codeTimerInterval) { clearInterval(codeTimerInterval); codeTimerInterval = null; }
+}
+
+function updateCodeTimer() {
+    const m = Math.floor(codeSeconds / 60), s = codeSeconds % 60;
+    const el = document.getElementById('code-timer');
+    if (el) el.innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function updateLineNumbers() {
+    const textarea = document.getElementById('code-input');
+    const nums = document.getElementById('code-line-nums');
+    if (!textarea || !nums) return;
+    const lines = textarea.value.split('\n').length;
+    nums.innerText = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
+}
+
+function submitCode() {
+    const input = document.getElementById('code-input');
+    if (!input) return;
+    const code = input.value.trim();
+    if (!code) {
+        input.focus();
+        input.style.boxShadow = 'inset 0 0 0 2px var(--red)';
+        setTimeout(() => { input.style.boxShadow = ''; }, 1200);
+        return;
+    }
+
+    const lang = (document.getElementById('code-lang-select') || {}).value || '';
+    addUserCodeBubble(code, lang);
+
+    // Send to engine as a code answer (engine will treat as transcript final)
+    ipcRenderer.send('ai-send', JSON.stringify({ type: "CODE_ANSWER", code: code, lang: lang }));
+
+    hideCodeEditor();
+    scrollToBottom();
+}
+
+function addUserCodeBubble(code, lang) {
+    const box = document.getElementById('transcript-box');
+    if (!box) return;
+    const div = document.createElement('div');
+    div.className = 'chat-bubble user code-answer';
+    const header = lang ? `<span style="font-size:10px;opacity:0.5;font-family:var(--font-mono);display:block;margin-bottom:6px;">${escapeHtml(lang)}</span>` : '';
+    div.innerHTML = header + `<pre class="code-block">${escapeHtml(code)}</pre>`;
+    box.appendChild(div);
+    scrollToBottom();
+}
+
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 // --- TTS STATE ---
 let ttsEnabled  = true;
 let ttsRate     = 1.0;
@@ -854,6 +963,45 @@ async function startInterviewSession() {
 
     document.getElementById('session-cam').srcObject = mediaStream;
 
+    // Set up smart auto-scroll on transcript box
+    autoScrollEnabled = true;
+    const transcriptBox = document.getElementById('transcript-box');
+    if (transcriptBox) {
+        transcriptBox.onscroll = () => {
+            const nearBottom = transcriptBox.scrollHeight - transcriptBox.scrollTop - transcriptBox.clientHeight < 80;
+            autoScrollEnabled = nearBottom;
+        };
+    }
+
+    // Wire up code editor textarea — Tab indent, Ctrl+Enter submit, live line numbers
+    const codeInput = document.getElementById('code-input');
+    if (codeInput) {
+        codeInput.addEventListener('keydown', (e) => {
+            // Tab → insert 4 spaces
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = codeInput.selectionStart;
+                const end   = codeInput.selectionEnd;
+                codeInput.value = codeInput.value.substring(0, start) + '    ' + codeInput.value.substring(end);
+                codeInput.selectionStart = codeInput.selectionEnd = start + 4;
+                updateLineNumbers();
+            }
+            // Ctrl+Enter → submit
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                submitCode();
+            }
+        });
+        codeInput.addEventListener('input', updateLineNumbers);
+        codeInput.addEventListener('scroll', () => {
+            const nums = document.getElementById('code-line-nums');
+            if (nums) nums.scrollTop = codeInput.scrollTop;
+        });
+    }
+
+    // Reset code editor state
+    hideCodeEditor();
+
     // Cheat detection
     sessionActive = true;
     cheatWarningCount = 0;
@@ -951,14 +1099,22 @@ function confirmEndSession() {
 
 // --- AI & TRANSCRIPT HANDLING ---
 
+// Scrolls transcript-box to the bottom only when auto-scroll is active
+function scrollToBottom() {
+    if (!autoScrollEnabled) return;
+    const box = document.getElementById("transcript-box");
+    if (box) box.scrollTop = box.scrollHeight;
+}
+
 // Helper to create AI Bubbles
-function addAIMessage(text) {
+// isCodeQuestion = true adds the yellow code-question CSS class
+function addAIMessage(text, isCodeQuestion = false) {
     const box = document.getElementById("transcript-box");
     const div = document.createElement("div");
-    div.className = "chat-bubble ai";
+    div.className = isCodeQuestion ? "chat-bubble ai code-question" : "chat-bubble ai";
     div.innerText = text;
     box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
+    scrollToBottom();
 }
 
 // Helper for User Live Speech
@@ -969,8 +1125,7 @@ function addPartial(text) {
         document.getElementById("transcript-box").appendChild(liveBubble);
     }
     liveBubble.innerText = text;
-    const box = document.getElementById("transcript-box");
-    box.scrollTop = box.scrollHeight;
+    scrollToBottom();
 }
 
 function addFinal(text) {
@@ -983,6 +1138,7 @@ function addFinal(text) {
         div.innerText = text;
         document.getElementById("transcript-box").appendChild(div);
     }
+    scrollToBottom();
 }
 
 // UNIFIED IPC LISTENER
@@ -1009,8 +1165,19 @@ ipcRenderer.on('ai-message', (_, msg) => {
                 break;
 
             case "QUESTION":
-                addAIMessage(data.text);
-                speakQuestion(data.text);
+                // If the previous code editor is still open (e.g. AI continued), close it
+                if (awaitingCode) hideCodeEditor();
+
+                if (isCodeQuestion(data.text)) {
+                    // Add AI bubble with the special code-question style
+                    addAIMessage(data.text, true);
+                    speakQuestion(data.text);
+                    // Let bubble animate in, then open the editor
+                    setTimeout(showCodeEditor, 350);
+                } else {
+                    addAIMessage(data.text);
+                    speakQuestion(data.text);
+                }
                 break;
 
             case "TRANSCRIPT_PARTIAL":

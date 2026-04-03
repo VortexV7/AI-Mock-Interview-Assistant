@@ -783,6 +783,12 @@ input:checked + .slider:before { transform: translateX(18px); }
     transition: width 0.05s linear;
 }
 
+/* ==================== TRANSCRIPT COLUMN ==================== */
+.transcript-column {
+    display: flex; flex-direction: column;
+    gap: 12px; min-height: 0; overflow: hidden;
+}
+
 /* ==================== TRANSCRIPT / CHAT ==================== */
 .transcript-chat {
     flex: 1; min-height: 0;
@@ -793,6 +799,190 @@ input:checked + .slider:before { transform: translateX(18px); }
     padding: 14px 16px;
     overflow-y: auto;
     display: flex; flex-direction: column; gap: 10px;
+}
+
+/* ==================== CODE EDITOR PANEL ==================== */
+.code-editor-panel {
+    display: none;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 310px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #1e1f22;
+    overflow: hidden;
+    box-shadow: 5px 5px 0 var(--border);
+    animation: code-editor-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes code-editor-in {
+    from { transform: translateY(14px) scaleY(0.92); opacity: 0; }
+    to   { transform: translateY(0)    scaleY(1);    opacity: 1; }
+}
+
+/* Header bar */
+.code-editor-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px; height: 38px;
+    background: #202124;
+    border-bottom: 1.5px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+
+.code-editor-badge {
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--yellow);
+    display: flex; align-items: center; gap: 6px;
+}
+
+.code-editor-divider {
+    flex: 1;
+}
+
+.code-lang-select {
+    background: #3c4043;
+    color: #e8eaed;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.code-lang-select option { background: #3c4043; }
+
+.code-timer-wrap {
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 12px; font-weight: 700;
+    color: var(--green);
+    letter-spacing: 2px;
+    min-width: 52px;
+    padding: 3px 8px;
+    background: rgba(52,168,83,0.12);
+    border: 1px solid rgba(52,168,83,0.25);
+    border-radius: 4px;
+}
+
+/* Editor body — textarea + line numbers side by side */
+.code-editor-body {
+    display: flex; flex: 1; min-height: 0; overflow: hidden;
+    position: relative;
+}
+
+.code-line-nums {
+    padding: 12px 10px;
+    background: #17181a;
+    color: rgba(255,255,255,0.2);
+    font-family: var(--font-mono);
+    font-size: 12px; line-height: 1.75;
+    text-align: right; white-space: pre;
+    user-select: none; -webkit-user-select: none;
+    border-right: 1.5px solid rgba(255,255,255,0.06);
+    min-width: 36px; overflow: hidden;
+    flex-shrink: 0;
+}
+
+.code-textarea {
+    flex: 1; padding: 12px 14px;
+    background: #1e1f22;
+    color: #e8eaed;
+    font-family: var(--font-mono);
+    font-size: 13px; line-height: 1.75;
+    border: none; outline: none; resize: none;
+    tab-size: 4; white-space: pre;
+    overflow-wrap: normal; overflow-x: auto; overflow-y: auto;
+    user-select: text; -webkit-user-select: text;
+    caret-color: var(--yellow);
+}
+.code-textarea::placeholder { color: rgba(255,255,255,0.2); }
+.code-textarea:focus { background: #1a1b1e; }
+
+/* Footer bar */
+.code-editor-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px; height: 42px;
+    background: #202124;
+    border-top: 1.5px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+
+.code-editor-hint {
+    font-size: 11px; color: rgba(255,255,255,0.3);
+    font-family: var(--font-mono);
+}
+.code-editor-hint kbd {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px; font-family: var(--font-mono);
+    color: rgba(255,255,255,0.5);
+    user-select: none;
+}
+
+/* Submit button inside the footer — override general button styles */
+#code-submit-btn {
+    background: var(--blue) !important;
+    color: #fff !important;
+    border-color: var(--blue-dark) !important;
+    box-shadow: 3px 3px 0 var(--blue-dark) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.6px !important;
+    text-transform: uppercase !important;
+    padding: 7px 18px !important;
+    border-radius: 4px !important;
+    border-width: 2px !important;
+    cursor: pointer;
+}
+#code-submit-btn:hover {
+    background: var(--blue-dark) !important;
+    transform: translate(-1px, -1px) !important;
+    box-shadow: 4px 4px 0 var(--blue-dark) !important;
+}
+#code-submit-btn:active {
+    transform: translate(3px, 3px) !important;
+    box-shadow: 0 0 0 var(--blue-dark) !important;
+}
+
+/* Code answer bubble in chat */
+.chat-bubble.code-answer {
+    max-width: 90%;
+    padding: 10px 12px;
+    background: #1e1f22;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 16px 2px 16px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+.chat-bubble.code-answer::before {
+    content: "⌨️  CODE ANSWER";
+    color: var(--yellow);
+}
+.code-block {
+    margin: 0; padding: 0;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 12px; line-height: 1.7;
+    color: #e8eaed; white-space: pre-wrap;
+    word-break: break-word; overflow-x: auto;
+}
+
+/* Code question indicator badge on AI bubble */
+.chat-bubble.ai.code-question {
+    border-color: var(--yellow);
+    background: #FEF7E0;
+}
+.chat-bubble.ai.code-question::before {
+    content: "🤖  AI INTERVIEWER  ·  ⌨️ CODE QUESTION";
+    color: #7A5800;
 }
 
 /* ── CHAT BUBBLES ── */
