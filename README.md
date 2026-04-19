@@ -87,8 +87,6 @@ The application follows a **local-first** architecture — there is no applicati
 
 ## Screenshots
 
-> 📸 Screenshots will be added here shortly. Add images to `docs/screenshots/` to populate the grid.
-
 | First-Time Setup | Dashboard |
 |:---:|:---:|
 | ![First-Time Setup](docs/screenshots/setup-screen.png) | ![Dashboard](docs/screenshots/dashboard.png) |
@@ -103,19 +101,6 @@ The application follows a **local-first** architecture — there is no applicati
 |:---:|
 | ![PDF Report](docs/screenshots/report-preview.png) |
 | *Auto-generated performance report with per-question scores and behavioural analysis* |
-
-<details>
-<summary>📁 Expected screenshot filenames</summary>
-
-```
-docs/screenshots/setup-screen.png
-docs/screenshots/dashboard.png
-docs/screenshots/session-view.png
-docs/screenshots/settings.png
-docs/screenshots/report-preview.png
-```
-
-</details>
 
 ---
 
