@@ -1,451 +1,430 @@
-<div align="center">
+# AI Mock Interview Assistant
 
-<h1>🤖 AI Mock Interview Assistant</h1>
+AI Mock Interview Assistant is a Windows desktop application for realistic, AI-powered interview practice. It combines topic-based interview setup, live speech transcription, adaptive follow-up questions, coding-answer support, focus monitoring, and automated PDF performance reports in a single local-first desktop experience.
 
-<p>
-  <strong>An offline-first, AI-powered mock interview desktop application built with Electron + Python.</strong><br/>
-  Generates real interview questions using a local LLM, transcribes your spoken answers in real-time using Groq Whisper, and produces a detailed PDF performance report — all on your own machine.
-</p>
+This repository contains the source code for the application. It is a **private proprietary project** and is **not open source**.
 
-<p>
-  <a href="https://github.com/dvoid7/aimock-interview/releases"><img src="https://img.shields.io/github/v/release/dvoid7/aimock-interview?style=flat-square&label=Release&color=00ff88" alt="Release"/></a>
-  <img src="https://img.shields.io/badge/Platform-Windows-blue?style=flat-square&logo=windows" alt="Platform"/>
-  <img src="https://img.shields.io/badge/Electron-33.x-47848f?style=flat-square&logo=electron" alt="Electron"/>
-  <img src="https://img.shields.io/badge/Python-3.10%2B-3776ab?style=flat-square&logo=python" alt="Python"/>
-  <img src="https://img.shields.io/badge/LLM-Llama%203.2%203B-ff6600?style=flat-square" alt="LLM"/>
-  <img src="https://img.shields.io/badge/STT-Groq%20Whisper-f55036?style=flat-square" alt="Groq"/>
-  <img src="https://img.shields.io/badge/License-Open%20Source-brightgreen?style=flat-square" alt="License"/>
-</p>
+## Notice
 
-<br/>
+This project is provided for portfolio, demonstration, personal, and educational reference purposes only under the terms in [LICENSE.txt](LICENSE.txt).
 
-<!-- SCREENSHOTS -->
-> 📸 **Add your screenshots to `docs/screenshots/` and update the paths below.**
+- Redistribution is not permitted without explicit written permission
+- Commercial use is not permitted without explicit written permission
+- Modification and derivative distribution are not permitted without explicit written permission
+- A separate commercial or collaboration arrangement requires direct approval from the author
 
-| Splash / Loading | First-Time Setup | Login |
-|:---:|:---:|:---:|
-| ![Splash](docs/screenshots/splash.png) | ![Setup](docs/screenshots/setup.png) | ![Login](docs/screenshots/login.png) |
+## Table of Contents
 
-| Dashboard | Live Interview Session | PDF Report |
-|:---:|:---:|:---:|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Session](docs/screenshots/session.png) | ![Report](docs/screenshots/report.png) |
+- [Product Overview](#product-overview)
+- [Core Capabilities](#core-capabilities)
+- [Screenshots](#screenshots)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Application Flow](#application-flow)
+- [First-Time Setup](#first-time-setup)
+- [Local Development](#local-development)
+- [Build and Packaging](#build-and-packaging)
+- [PDF Reports](#pdf-reports)
+- [Configuration and Data Storage](#configuration-and-data-storage)
+- [Troubleshooting](#troubleshooting)
+- [Roadmap](#roadmap)
+- [Author](#author)
+- [License](#license)
 
-</div>
+## Product Overview
 
----
+AI Mock Interview Assistant is designed to simulate a guided interview session inside a desktop application. The user selects topics, sets a difficulty level, starts an interview session, answers questions verbally or through the built-in code editor, and receives a PDF report with structured feedback at the end of the session.
 
-## 📖 Table of Contents
+The project follows a local-first approach for desktop UX and user data storage:
 
-- [About the Project](#-about-the-project)
-- [Research Paper](#-research-paper)
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
-- [How It Works](#-how-it-works)
-- [Prerequisites](#-prerequisites)
-- [Getting Started (Dev Mode)](#-getting-started-dev-mode)
-- [Building for Production](#-building-for-production)
-- [Environment Variables](#-environment-variables)
-- [Supported Interview Topics](#-supported-interview-topics)
-- [Project Structure](#-project-structure)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Author](#-author)
+- the UI runs inside Electron
+- the AI engine runs in Python
+- user settings are stored locally on the machine
+- reports are generated locally and saved to the application data directory
+- AI requests are made through the user's own Groq API key
 
----
+## Core Capabilities
 
-## 🧠 About the Project
+### Interview Experience
 
-**AI Mock Interview Assistant** is a desktop application that simulates a real technical interview experience entirely on your own device. It combines a **locally-running Large Language Model (LLM)** for intelligent question generation with **Groq's free cloud Whisper API** for fast, accurate speech-to-text transcription.
+- Topic-based interview configuration from the dashboard
+- Multiple interview domains including programming, CS fundamentals, frameworks, SQL, behavioral, and leadership topics
+- Difficulty control before session start
+- One-question-at-a-time interview flow
+- Adaptive follow-up questions based on recent conversation context
+- Built-in code-answer workflow for coding-style prompts
 
-No subscription. No data sent to training servers. Your answers stay on your machine.
+### Audio and AI
 
-The app:
-- **Listens** to your spoken answers in real time via your microphone
-- **Transcribes** your speech using Groq Whisper (whisper-large-v3-turbo)
-- **Generates** contextual follow-up questions using a local Llama 3.2 3B model
-- **Evaluates** your entire session and exports a **PDF performance report** with per-question scores and improvement tips
+- Speech-to-text transcription using Groq Whisper
+- LLM-powered question generation and answer evaluation
+- Text-to-speech playback for interviewer questions
+- Microphone activity visualization during the session
 
----
+### Session Controls
 
-## 📄 Research Paper
+- Fullscreen interview mode
+- Start, pause, resume, and end session controls
+- Live timer during the interview
+- Camera preview in dashboard and session views
+- Camera and microphone device selection from Settings
 
-> This project was developed as part of a research study on **AI-assisted interview preparation and automated competency evaluation using local language models**.
+### Monitoring and Behavioural Signals
 
-### Citation
+- Focus warnings when the window loses focus
+- Camera-based face-presence checks during the session
+- Behavioural flag summary included in the report
+- Filler-word tracking across user answers
 
-If you use this project in academic work, please cite:
+### Reporting
 
-```bibtex
-@software{sharanagate2026aimock,
-  author    = {Ved Sharanagate},
-  title     = {AI Mock Interview Assistant: Offline-First Interview Preparation Using Local LLMs and Real-Time Speech Recognition},
-  year      = {2026},
-  publisher = {GitHub},
-  url       = {https://github.com/dvoid7/aimock-interview}
-}
+- Automatic PDF report generation when the session ends
+- Per-question scoring and feedback
+- Overall performance summary
+- Recommended next steps
+- Behavioural analysis section for focus warnings and filler usage
+
+## Screenshots
+
+You mentioned that you want to add screenshots. The README is ready for that.
+
+Recommended screenshot directory:
+
+```text
+docs/screenshots/
 ```
 
-### Research Focus Areas
+Recommended filenames:
 
-| Area | Description |
-|------|-------------|
-| **Local LLM inference** | On-device question generation without cloud dependency using quantized Llama 3.2 |
-| **Hybrid AI pipeline** | Combining offline LLM + cloud STT (Groq Whisper) for a practical latency/accuracy balance |
-| **Automated evaluation** | LLM-driven scoring and feedback generation for open-ended spoken answers |
-| **Interview simulation fidelity** | Evaluating whether AI-generated questions match real interview difficulty and progression |
-| **Accessibility** | Enabling quality interview practice for users without access to live mock interviewers |
-
----
-
-## ✨ Features
-
-- 🎙️ **Real-time speech recognition** — Powered by Groq Whisper (`whisper-large-v3-turbo`), transcribes your spoken answers as you talk
-- 🧠 **Local LLM questioning** — Llama 3.2 3B Instruct (Q4_K_M quantized, runs entirely on CPU, no GPU needed)
-- 📊 **PDF Performance Report** — Auto-generated after each session with per-question scores (1–10), targeted feedback, and improvement tips
-- 🎯 **18 Interview Topics** — Technical and HR topics selectable from the dashboard
-- 📈 **3 Difficulty Levels** — Easy, Intermediate, Advanced
-- 📷 **Camera + Mic Live Preview** — Real-time video/audio monitoring to simulate interview conditions
-- 🔇 **Intelligent Silence Detection** — Automatically flushes buffered audio and queues follow-up questions after a configurable pause
-- 🔐 **Privacy-first** — API key stored locally in `%AppData%`, never bundled in the installer
-- 🏠 **Offline LLM** — Questions generated locally; only STT calls leave your machine
-- 🪟 **Custom Frameless UI** — Sleek dark-themed window with custom min/max/close controls
-- 👤 **User Profiles** — Persistent login with name saved locally
-- ⏱️ **Session Timer** — Track how long your session has been running
-- 📁 **Report History** — All PDF reports saved in `engine/reports/`
-
----
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Electron Frontend (Node.js)                 │
-│  index.html  ←→  renderer.js  ←→  main.js (IPC bridge)          │
-└────────────────────────┬────────────────────────────────────────┘
-                         │  stdin/stdout JSON protocol
-                         ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                    Python AI Engine (app.py)                     │
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐    │
-│  │  sounddevice │  │   llama-cpp-     │  │  Groq Whisper    │    │
-│  │  (mic input) │→ │   python (LLM)   │  │  API (STT)       │    │
-│  └──────────────┘  │  LOCAL / OFFLINE │  │  cloud.groq.com  │    │
-│                    └─────────┬────────┘  └────────┬─────────┘    │
-│                              │ questions           │ transcripts │
-│                              ▼                     ▼             │
-│                     ┌─────────────────────────────────────┐      │
-│                     │         reportlab (PDF output)      │      │
-│                     └─────────────────────────────────────┘      │
-└──────────────────────────────────────────────────────────────────┘
+```text
+docs/screenshots/setup-screen.png
+docs/screenshots/dashboard.png
+docs/screenshots/session-view.png
+docs/screenshots/settings.png
+docs/screenshots/report-preview.png
 ```
 
-### Communication Protocol
+Once you add those images, this section will render nicely on GitHub:
 
-The Electron main process spawns the Python engine as a child process. All communication is via **newline-delimited JSON** over `stdin`/`stdout`:
+```md
+## Screenshots
 
-| Direction | Message Type | Description |
-|-----------|-------------|-------------|
-| JS → Python | `START_LISTENING` | Begins session with topics, difficulty, user name |
-| JS → Python | `STOP_LISTENING` | Ends session and triggers report generation |
-| JS → Python | `GET_TOPICS` | Requests available topic list |
-| Python → JS | `QUESTION` | A new interview question to display |
-| Python → JS | `TRANSCRIPT_FINAL` | Transcribed answer text |
-| Python → JS | `REPORT_READY` | PDF report path when generation complete |
-| Python → JS | `ENGINE_STATUS` | `LOADING` or `READY` |
-| Python → JS | `ERROR` | Error messages / warnings |
+### First-Time Setup
+![First-Time Setup](docs/screenshots/setup-screen.png)
 
----
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
 
-## 🛠️ Tech Stack
+### Interview Session
+![Interview Session](docs/screenshots/session-view.png)
 
-### Frontend
-| Technology | Version | Role |
-|-----------|---------|------|
-| [Electron](https://electronjs.org) | 33.x | Desktop app shell |
-| HTML5 / CSS3 / JS | — | UI, camera/mic access |
-| Font Awesome | 6.4 | Icons |
+### Settings
+![Settings](docs/screenshots/settings.png)
 
-### Backend (Python Engine)
-| Library | Role |
-|--------|------|
-| [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) | Local LLM inference (Llama 3.2 3B) |
-| [groq](https://pypi.org/project/groq/) | Groq Whisper API client for speech-to-text |
-| [sounddevice](https://python-sounddevice.readthedocs.io) | Microphone audio capture |
-| [numpy](https://numpy.org) | Audio buffer processing & RMS silence detection |
-| [reportlab](https://www.reportlab.com) | PDF report generation |
-| [python-dotenv](https://pypi.org/project/python-dotenv/) | `.env` loading in development |
-
-### Build Tools
-| Tool | Role |
-|------|------|
-| [electron-builder](https://www.electron.build) | Windows NSIS installer packaging |
-| [PyInstaller](https://pyinstaller.org) | Bundles Python engine to `engine.exe` |
-| `build.bat` | One-command full project build script |
-
----
-
-## ⚙️ How It Works
-
-```
-1. App launches → checks for saved Groq API key
-       │
-       ├─ Not found → shows First-Time Setup screen → user enters gsk_... key
-       │                   (saved to %AppData%\AI Mock Interview Assistant\config.json)
-       │
-       └─ Found → Python engine starts → loads Llama 3.2 3B model (~2GB RAM)
-
-2. User logs in (name stored locally) → Dashboard appears
-
-3. User selects topics + difficulty → clicks "Start Interview"
-
-4. Python engine receives START_LISTENING:
-   ├─ Llama generates first question → displayed in UI
-   ├─ Microphone starts recording in 5-second chunks
-   ├─ Each chunk → Groq Whisper API → transcript text
-   ├─ Transcript displayed live in UI
-   ├─ After 3 seconds silence → answer flushed to LLM
-   └─ Llama generates follow-up question → loop continues
-
-5. User clicks "End Session"
-   ├─ Python engine receives STOP_LISTENING
-   ├─ All Q&A pairs sent to Llama for evaluation
-   ├─ Scores (1–10), feedback, improvement tips generated
-   └─ PDF report exported → engine/reports/interview_report_YYYYMMDD_HHMMSS.pdf
+### PDF Report
+![PDF Report](docs/screenshots/report-preview.png)
 ```
 
----
+If you want, I can also add the screenshot section directly into the README with placeholders right now. At the moment I am leaving it documented cleanly so the README does not show broken image links.
 
-## 📋 Prerequisites
+## Architecture
 
-| Requirement | Notes |
-|-------------|-------|
-| **Windows 10/11** (x64) | App targets Windows only |
-| **Node.js ≥ 18** | [nodejs.org](https://nodejs.org) — for Electron and npm |
-| **Python 3.10–3.12** | [python.org](https://python.org) — for the AI engine |
-| **pip** | Comes with Python |
-| **Groq API Key (free)** | Get one at [console.groq.com](https://console.groq.com) — needed for speech transcription only |
-| **LLM model file** | `Llama-3.2-3B-Instruct-Q4_K_M.gguf` placed at `engine/models/llm/` (see below) |
-| **Microphone** | Required for voice input |
+The project is split into two main layers:
 
-### Downloading the LLM Model
+### 1. Electron Desktop Layer
 
-The model file is **not included** in this repository (it is ~2 GB).
+Responsible for:
 
-Download it from Hugging Face:
+- window management
+- onboarding and login UI
+- dashboard and settings UI
+- device selection
+- IPC communication with the Python engine
+- packaged installer behavior
 
+Primary files:
+
+- `main.js`
+- `renderer.js`
+- `index.html`
+- `assets/style.css`
+
+### 2. Python AI Engine
+
+Responsible for:
+
+- session state management
+- AI question generation
+- Groq Whisper transcription
+- follow-up question logic
+- report evaluation
+- PDF report generation
+
+Primary file:
+
+- `engine/app.py`
+
+Communication between Electron and Python is done through process messaging over stdin/stdout.
+
+## Technology Stack
+
+### Frontend / Desktop
+
+- Electron
+- HTML
+- CSS
+- JavaScript
+
+### Python Engine
+
+- Python
+- Groq SDK
+- NumPy
+- sounddevice
+- python-dotenv
+- ReportLab
+- Pillow
+
+### Packaging
+
+- PyInstaller
+- electron-builder
+
+## Project Structure
+
+```text
+.
+|-- assets/
+|   |-- icon.ico
+|   `-- style.css
+|-- build/
+|   `-- installer.nsh
+|-- engine/
+|   |-- app.py
+|   |-- engine.spec
+|   `-- runtime_hook_ssl.py
+|-- index.html
+|-- main.js
+|-- renderer.js
+|-- requirements.txt
+|-- package.json
+|-- build.bat
+`-- LICENSE.txt
 ```
-Model:  Llama-3.2-3B-Instruct-Q4_K_M.gguf
-Source: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF
+
+## Application Flow
+
+### First Launch
+
+1. The application starts and checks for a locally saved Groq API key.
+2. If no valid key exists, the user sees the onboarding/setup screen.
+3. The user enters a Groq API key to enable AI features.
+4. The app stores the key locally and starts the Python engine.
+
+### Returning User
+
+1. The app loads the saved user profile and API key.
+2. The dashboard opens after login.
+3. The user selects interview topics and difficulty.
+4. The session starts in fullscreen interview mode.
+
+### During Session
+
+1. The engine asks one interview question at a time.
+2. The user answers verbally or through the code editor.
+3. The engine transcribes speech and builds contextual follow-up prompts.
+4. Focus and behaviour signals are tracked.
+
+### End of Session
+
+1. The user ends the session.
+2. The engine finalizes the Q&A set.
+3. The report is evaluated and converted into PDF form.
+4. The generated PDF is opened automatically.
+
+## First-Time Setup
+
+The application intentionally asks new users for a Groq API key during onboarding.
+
+This behavior is expected and by design.
+
+Why this is required:
+
+- the application does not embed a shared production API key
+- shipping a shared API key inside a desktop app is insecure
+- each user authenticates AI usage through their own Groq account
+
+Saved configuration path:
+
+```text
+%AppData%\AI Mock Interview Assistant\config.json
 ```
 
-Place the downloaded file at:
-```
-engine/
-└── models/
-    └── llm/
-        └── Llama-3.2-3B-Instruct-Q4_K_M.gguf   ← here
+Saved user profile path:
+
+```text
+%AppData%\AI Mock Interview Assistant\user.json
 ```
 
----
+## Local Development
 
-## 🚀 Getting Started (Dev Mode)
+### Prerequisites
 
-### 1. Clone the repository
+- Windows
+- Node.js and npm
+- Python 3.x
 
-```bash
-git clone https://github.com/dvoid7/aimock-interview.git
-cd aimock-interview
-```
+### Install Dependencies
 
-### 2. Install Node dependencies
-
-```bash
+```powershell
 npm install
+python -m venv venv
+venv\Scripts\pip install -r requirements.txt
 ```
 
-### 3. Set up Python environment
+### Run in Development
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### 4. Configure environment variables
-
-Copy the example env file and add your Groq API key:
-
-```bash
-copy .env.example .env
-```
-
-Edit `.env`:
-```
-GROQ_API_KEY=gsk_your_actual_key_here
-```
-
-> ℹ️ In development mode the app reads `GROQ_API_KEY` from `.env`.  
-> In production the key is saved via the in-app setup screen to `%AppData%`.
-
-### 5. Download the LLM model
-
-Place `Llama-3.2-3B-Instruct-Q4_K_M.gguf` in `engine/models/llm/` (see [Prerequisites](#-prerequisites)).
-
-### 6. Run the app
-
-```bash
+```powershell
 npm start
 ```
 
----
+## Build and Packaging
 
-## 📦 Building for Production
+The project includes a Windows build pipeline that packages:
 
-The project ships a single `build.bat` script that handles everything:
+- the Python engine with PyInstaller
+- the Electron application with electron-builder
 
-```bat
+### Build Script
+
+Use:
+
+```powershell
 build.bat
 ```
 
-What it does, step by step:
+### What the Build Script Does
 
-| Step | Action |
-|------|--------|
-| **1** | Checks Python + npm are available |
-| **2** | Runs `npm install` |
-| **3** | Creates `.venv`, installs `pyinstaller` + `requirements.txt` |
-| **4** | Runs PyInstaller → produces `engine/dist/engine/engine.exe` |
-| **5** | Runs `electron-builder` → produces NSIS installer in `dist-installer/` |
+1. checks for Python and npm
+2. installs Node.js dependencies
+3. creates the Python virtual environment
+4. installs Python dependencies and PyInstaller
+5. bundles the Python engine from `engine/engine.spec`
+6. builds the Windows installer through Electron Builder
 
-After a successful build:
-```
-dist-installer/
-└── AI-Mock-Interview-Assistant-Setup-v1.0.0.exe   ← distributable installer
-```
+### Installer Output
 
-The installer:
-- Is a standard Windows NSIS installer (one-click or configurable)
-- Creates Start Menu + Desktop shortcuts
-- **Does NOT bundle the LLM model** (too large; user must provide it)
-- **Does NOT bundle any API keys**
-
-> ⚠️ **Note:** You must place the LLM model at `engine/models/llm/` before building so it gets bundled correctly by `electron-builder`'s `extraResources`.
-
----
-
-## 🔑 Environment Variables
-
-Create a `.env` file in the project root for **development mode only**:
-
-```env
-# Copy this file to .env and fill in your values
-# See .env.example for a template
-
-GROQ_API_KEY=gsk_...
+```text
+dist-installer\AI-Mock-Interview-Assistant-Setup-v2.0.0.exe
 ```
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GROQ_API_KEY` | ✅ Yes | Your Groq API key for Whisper speech-to-text. Free at [console.groq.com](https://console.groq.com). Must start with `gsk_`. |
+## PDF Reports
 
-> **Production:** The `.env` file is **not used** in built/packaged apps. The key is saved by the user through the in-app first-time setup screen and stored in `%AppData%\AI Mock Interview Assistant\config.json`.
+The application generates a PDF report after the interview session ends.
 
-> **Security:** `.env` is listed in `.gitignore` and excluded from the installer build — it is never shipped.
+Report contents include:
 
----
+- candidate name
+- interview topics
+- difficulty level
+- question count
+- filler word count
+- focus warning count
+- overall rating
+- per-question score
+- feedback and improvement tips
+- behavioural analysis
+- recommended next steps
 
-## 🎯 Supported Interview Topics
+### Report Storage
 
-Choose any combination of topics when starting a session:
+Reports are saved to the app's writable user-data area rather than the packaged engine directory.
 
-| Technical | Frameworks | Soft Skills |
-|-----------|-----------|-------------|
-| Python | React | HR Questions |
-| Java | Node.js | Behavioral |
-| JavaScript | Angular | Leadership |
-| C++ | DevOps | Teamwork |
-| C# | Machine Learning | |
-| Data Structures | | |
-| Algorithms | | |
-| System Design | | |
-| SQL | | |
+### Product Sans Support
 
-**Difficulty Levels:** Easy · Intermediate · Advanced
+The PDF generator supports Product Sans automatically when these files are available:
 
----
-
-## 📁 Project Structure
-
-```
-aimock-interview/
-│
-├── main.js                  # Electron main process — window, IPC, Python spawning
-├── renderer.js              # Electron renderer — UI logic, camera/mic, session flow
-├── index.html               # App HTML — all views (setup, login, dashboard, session)
-├── package.json             # Node.js config + electron-builder config
-├── requirements.txt         # Python dependencies
-├── build.bat                # Full build script (Python bundle + Electron installer)
-├── .env.example             # Template for environment variables
-├── LICENSE.txt              # License
-│
-├── assets/
-│   ├── style.css            # All UI styles (dark theme, animations, layouts)
-│   └── icon.ico             # App icon
-│
-└── engine/
-    ├── app.py               # Python AI engine — LLM, Whisper, audio, report gen
-    ├── engine.spec          # PyInstaller build spec
-    │
-    ├── models/
-    │   └── llm/
-    │       └── Llama-3.2-3B-Instruct-Q4_K_M.gguf   # ← NOT in repo, download separately
-    │
-    ├── reports/             # Auto-generated PDF reports saved here
-    └── user_data/           # Local user profile storage
+```text
+engine/fonts/ProductSans-Regular.ttf
+engine/fonts/ProductSans-Bold.ttf
 ```
 
----
+If those font files are not present, the PDF generator falls back to Helvetica automatically.
 
-## 🤝 Contributing
+## Configuration and Data Storage
 
-Contributions, bug reports, and feature suggestions are welcome!
+### Local Files
 
-1. Fork this repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m "feat: add your feature"`
-4. Push to your fork: `git push origin feature/your-feature-name`
-5. Open a Pull Request
+- API key: `%AppData%\AI Mock Interview Assistant\config.json`
+- user profile: `%AppData%\AI Mock Interview Assistant\user.json`
+- reports: `%AppData%\AI Mock Interview Assistant\reports\`
+- crash log: `%AppData%\AI Mock Interview Assistant\engine-crash.log`
+- stderr log: `%AppData%\AI Mock Interview Assistant\engine-stderr.log`
 
-### Areas to contribute
+### Privacy Notes
 
-- 🌐 **Linux / macOS support** — currently Windows only; cross-platform port needed
-- 🔊 **TTS / Audio feedback** — read questions aloud using a TTS engine
-- 🧑‍💻 **More topics** — add domain-specific question banks
-- 📊 **Analytics dashboard** — track scores across multiple sessions over time
-- 🎨 **Themes** — light mode or custom color schemes
-- 🧪 **Tests** — unit tests for the Python engine
+- user profile data is stored locally
+- API keys are stored locally
+- reports are generated locally
+- no application-owned backend is included in this repository
+- AI requests are sent through the user's own Groq account
 
-Please follow the existing code style and open an issue first for large changes.
+## Troubleshooting
 
----
+### `pyinstaller` is not recognized
 
-## 📜 License
+Use the provided `build.bat`. The script installs and executes PyInstaller from the project virtual environment directly.
 
-See [LICENSE.txt](LICENSE.txt) for details.
+### Invalid API key or `401 invalid_api_key`
 
----
+- verify that the saved key is a valid Groq key
+- the key should begin with `gsk_`
+- update the key from the in-app Settings screen
 
-## 👤 Author
+### Session does not start
 
-**Ved Sharanagate**
+- make sure at least one interview topic is selected
+- make sure the Python engine is running
+- rebuild the packaged app if the engine bundle is outdated or missing
 
-- GitHub: [@VortexV7](https://github.com/VortexV7)
-- Email: vedsharangate@gmail.com
+### Report PDF is not generated
 
----
+Check:
 
-<div align="center">
-  <sub>Built with ❤️ for AI research and interview preparation.</sub>
-</div>
+```text
+%AppData%\AI Mock Interview Assistant\engine-crash.log
+%AppData%\AI Mock Interview Assistant\engine-stderr.log
+```
+
+Recent versions store reports in the app data directory, not inside the packaged `engine` folder.
+
+## Roadmap
+
+Potential future improvements:
+
+- screenshot-rich GitHub presentation
+- refined onboarding UX
+- more interview packs and curated content
+- stronger report visualization and analytics
+- optional managed backend mode
+- export/import of session history
+
+## Author
+
+Ved Sharanagate  
+Email: `vedsharangate@gmail.com`
+
+## License
+
+This repository is a **proprietary private project**.
+
+It is **not open source**.
+
+Please read [LICENSE.txt](LICENSE.txt) for the exact legal terms. In summary:
+
+- personal and educational use only
+- no redistribution without permission
+- no commercial use without permission
+- no modification or derivative sharing without permission
+
