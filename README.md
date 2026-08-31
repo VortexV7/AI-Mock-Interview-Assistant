@@ -30,7 +30,7 @@ The research paper based on this project — *"AI-Powered Mock Interview Assista
 |---|---|
 | Institution | Govindrao Wanjari College of Engineering & Technology, Nagpur |
 | Department | Computer Science & Engineering |
-| University | RTM Nagpur University |
+| University | DBATU |
 | Conference | ICRTSET-2026 |
 | Presented | April 6, 2026 |
 | Paper Status | Accepted for Publication |
